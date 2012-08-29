@@ -1,15 +1,18 @@
 <?php
 
-$root = dirname(dirname(__DIR__));
+$root = realpath(dirname(__DIR__) . '/../../../');
+$appname = $_SERVER['SERVER_NAME'];
+$app = $root . '/apps/' . $appname;
+$tests = $app . '/tests';
 
 $config = array(
     /* Required */
 
     // The directory where PEAR is located
-    'pear_path'      => '/usr/share/pear',
+    'pear_path'      => '/Applications/MAMP/bin/php5.3/bin/pear',
 
     // The directory where the tests reside
-    'test_directory' => "{$root}/app/test",
+    'test_directory' => $tests . '/classes',
 
 
     /* Optional */
@@ -28,14 +31,14 @@ $config = array(
         'host'     => 'localhost',
         'port'     => '3306',
         'username' => 'root',
-        'password' => 'admin'
+        'password' => 'root'
     ),
 
     // Whether or not to create snapshots of the test results
     'create_snapshots' => false,
 
     // The directory where the test results will be stored
-    'snapshot_directory' => "{$root}/app/history/",
+    'snapshot_directory' => $app . '/history/',
 
     // Whether or not to sandbox PHP errors
     'sandbox_errors' => false,
@@ -62,17 +65,21 @@ $config = array(
     // In order for VPU to function correctly, the configuration file must
     // contain a JSON listener (see the README for more information)
     'xml_configuration_file' => false,
-    //'xml_configuration_file' => "{$root}/app/config/phpunit.xml",
+    //'xml_configuration_file' => $tests . '/phpunit.xml',
 
     // Paths to any necessary bootstraps
     'bootstraps' => array(
-        // '/path/to/bootstrap.php'
+        $tests . '/bootstrap.php',
+        $root . '/webroot/index.php'
     )
 );
 
 set_include_path(
     get_include_path()
     . PATH_SEPARATOR . $root
+    . PATH_SEPARATOR . $root . '/webroot/phpunit'
+    . PATH_SEPARATOR . $root . '/webroot/phpunit/core'
+    . PATH_SEPARATOR . $root . '/webroot/phpunit/core/phpunit'
     . PATH_SEPARATOR . $config['pear_path']
 );
 
@@ -81,8 +88,9 @@ require_once 'PHPUnit/Util/Log/JSON.php';
 
 spl_autoload_register(function($class) use ($root) {
     $class = str_replace('\\', '/', $class);
-    $file = "{$root}/{$class}.php";
-    if ( file_exists($file) ) {
+    $file = $root . "/webroot/phpunit/{$class}.php";
+    
+    if (file_exists($file)) {
         require $file;
     }
 });
